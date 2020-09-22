@@ -5,6 +5,25 @@ import (
     "sync"
 )
 
+type Something struct {
+    x int
+}
+
+func getMeAChannel(x interface{}) chan []interface{} {
+    c := make(chan []interface{})
+    go func() {
+        defer close(c)
+        list := make([]interface{}, 5)
+        list[0] = x
+        list[1] = x
+        list[2] = x
+        list[3] = x
+        list[4] = x
+        c <- list
+    }()
+    return c
+}
+
 func main() {
     comms := make(chan interface{})
 
@@ -33,5 +52,8 @@ func main() {
     close(syncComms)
     waitSyncComms.Wait()
     fmt.Println("done")
+
+    cc := getMeAChannel(1)
+    fmt.Println(<-cc)
 }
 
