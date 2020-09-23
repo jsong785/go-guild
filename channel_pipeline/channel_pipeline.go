@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 type Channel <-chan interface{}
 type ChannelFunc func(<-chan interface{}, Channel) Channel
@@ -41,6 +44,17 @@ func addPipe(add int) ChannelFunc {
 	}
 }
 
+func toString(done <-chan interface{}, input Channel) Channel {
+	c := make(chan interface{})
+	go func() {
+		defer close(c)
+		for x := range input {
+			c <- strconv.Itoa(x.(int))
+		}
+	}()
+	return c
+}
+
 func main() {
 	done := make(chan interface{})
 	defer close(done)
@@ -56,7 +70,7 @@ func main() {
 	// 2 4 6 8 10
 	// 3 5 7 9 11
 	// 13 15 17 19 21
-	res := Bind(done, msg, multiplyPipe(2), addPipe(1), addPipe(10))
+	res := Bind(done, msg, multiplyPipe(2), addPipe(1), addPipe(10), toString)
 	for o := range res {
 		fmt.Println(o)
 	}
