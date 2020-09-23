@@ -22,10 +22,10 @@ func Bind(val ErrorMonad, f ...ErrorMonadFunc) ErrorMonad {
     return Bind(f[0](val.val), f[1:]...)
 }
 
-func addOne(x interface{}) ErrorMonad {
+func addOnePositiveOnly(x interface{}) ErrorMonad {
     number := x.(int)
-    if number < 1 {
-        return ErrorMonad{ err: errors.New("number must be greater than 0") }
+    if number < 0 {
+        return ErrorMonad{ err: errors.New("number must be positive") }
     }
     return ErrorMonad{ val: number+1 }
 }
@@ -40,16 +40,16 @@ func toString(number interface{}) ErrorMonad {
 
 func main() {
     // success
-    fmt.Println(Bind(addOne(1), addOne))
-    fmt.Println(Bind(addOne(100), addOne, addOne, toString))
-    fmt.Println(Bind(addOne(1), subtractOne, addOne, toString));
+    fmt.Println(Bind(addOnePositiveOnly(0), addOnePositiveOnly))
+    fmt.Println(Bind(addOnePositiveOnly(100), addOnePositiveOnly, addOnePositiveOnly, toString))
+    fmt.Println(Bind(addOnePositiveOnly(0), subtractOne, addOnePositiveOnly, toString));
 
     // errors
-    fmt.Println(Bind(addOne(1), subtractOne, subtractOne, addOne));
-    fmt.Println(Bind(addOne(1), subtractOne, subtractOne, addOne, toString));
+    fmt.Println(Bind(addOnePositiveOnly(0), subtractOne, subtractOne, addOnePositiveOnly));
+    fmt.Println(Bind(addOnePositiveOnly(0), subtractOne, subtractOne, addOnePositiveOnly, toString));
 
-    fmt.Println(Bind(addOne(-1), addOne))
-    fmt.Println(Bind(addOne(-1), addOne, addOne, toString))
+    fmt.Println(Bind(addOnePositiveOnly(-1), addOnePositiveOnly))
+    fmt.Println(Bind(addOnePositiveOnly(-1), addOnePositiveOnly, addOnePositiveOnly, toString))
 
 }
 
