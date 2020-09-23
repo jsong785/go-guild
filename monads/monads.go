@@ -30,8 +30,8 @@ func AddOne(x interface{}) ErrorMonad {
     return ErrorMonad{ val: number+1 }
 }
 
-func SubtractOne(x interface{}) ErrorMonad {
-    return ErrorMonad{ val: x.(int) - 1 };
+func SubtractOne(number interface{}) ErrorMonad {
+    return ErrorMonad{ val: number.(int) - 1 };
 }
 
 func ToString(number interface{}) ErrorMonad {
