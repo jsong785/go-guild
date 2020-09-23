@@ -10,7 +10,7 @@ type ErrorMonad struct {
 	val interface{}
 	err error
 }
-type ErrorMonadFunc func(val interface{}) ErrorMonad
+type ErrorMonadFunc func(interface{}) ErrorMonad
 
 func Bind(val ErrorMonad, f ...ErrorMonadFunc) ErrorMonad {
 	if val.err != nil {
