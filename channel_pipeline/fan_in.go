@@ -1,6 +1,6 @@
 package main
 
-//import sync
+import "sync"
 
 func OrDone(done Channel, c Channel) Channel {
 	output := make(chan interface{})
@@ -26,36 +26,27 @@ func OrDone(done Channel, c Channel) Channel {
 	return output
 }
 
-/*
 func FanInAdaptor(n int, f ChannelFunc) ChannelFunc {
-    fanChannels := make([]Channel, n)
-    for i, _ := range fanChannels {
-        fanChannels[i] = make(Channel)
-    }
+	return func(done Channel, c Channel) Channel {
+		output := make(chan interface{})
 
-    closeFanChannels := func() {
-        for i, _ := range fanChannels {
-            close(fanChannels[i])
-        }
-    }
+		wg := sync.WaitGroup{}
+		multiplex := func(cur Channel) {
+			defer wg.Done()
+			for i := range OrDone(done, cur) {
+				output <- i
+			}
+		}
 
-    wg := sync.WaitGroup{}
-    wg.Add(n)
+		for i := 0; i < n; i++ {
+			wg.Add(1)
+			go multiplex(f(done, c))
+		}
 
-    return func(done <-chan interface{}, c Channel) Channel {
-        defer closeFanChannels()
-        for i, _ := range fanChannels {
-            fanChannels[i] = f(done, c)
-        }
-
-        output := make(Channel)
-
-        for _, fc := range fanChannels {
-            go func() {
-                output<- fc
-            }
-        }
-        return output
-    }
+		go func() {
+			wg.Wait()
+			close(output)
+		}()
+		return output
+	}
 }
-*/
