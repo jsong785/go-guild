@@ -6,9 +6,9 @@ import (
 )
 
 type Channel <-chan interface{}
-type ChannelFunc func(<-chan interface{}, Channel) Channel
+type ChannelFunc func(Channel, Channel) Channel
 
-func Bind(done <-chan interface{}, input Channel, f ...ChannelFunc) Channel {
+func Bind(done Channel, input Channel, f ...ChannelFunc) Channel {
 	if input == nil {
 		return nil
 	}
@@ -19,11 +19,11 @@ func Bind(done <-chan interface{}, input Channel, f ...ChannelFunc) Channel {
 }
 
 func multiplyPipe(factor int) ChannelFunc {
-	return func(done <-chan interface{}, input Channel) Channel {
+	return func(done Channel, input Channel) Channel {
 		c := make(chan interface{})
 		go func() {
 			defer close(c)
-			for x := range input {
+			for x := range OrDone(done, input) {
 				c <- x.(int) * factor
 			}
 		}()
@@ -32,11 +32,11 @@ func multiplyPipe(factor int) ChannelFunc {
 }
 
 func addPipe(add int) ChannelFunc {
-	return func(done <-chan interface{}, input Channel) Channel {
+	return func(done Channel, input Channel) Channel {
 		c := make(chan interface{})
 		go func() {
 			defer close(c)
-			for x := range input {
+			for x := range OrDone(done, input) {
 				c <- x.(int) + add
 			}
 		}()
@@ -44,11 +44,11 @@ func addPipe(add int) ChannelFunc {
 	}
 }
 
-func toString(done <-chan interface{}, input Channel) Channel {
+func toString(done Channel, input Channel) Channel {
 	c := make(chan interface{})
 	go func() {
 		defer close(c)
-		for x := range input {
+		for x := range OrDone(done, input) {
 			c <- strconv.Itoa(x.(int))
 		}
 	}()
