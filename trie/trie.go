@@ -23,16 +23,23 @@ func createNode(val byte) Node {
     }
 }
 
-func (root *Node) Exists(val string) bool {
+func (root *Node) GetNode(val string) *Node {
     var cur *Node = root
     for _, c := range val {
         if n := found(cur.nodes, byte(c)); n != nil {
             cur = n
         } else {
-            return false;
+            return nil
         }
     }
-    return cur.end
+    if cur.end {
+        return cur
+    }
+    return nil
+}
+
+func (root *Node) Exists(val string) bool {
+    return root.GetNode(val) != nil
 }
 
 func (root *Node) Delete(val string) bool {

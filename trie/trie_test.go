@@ -115,6 +115,18 @@ func TestDeleteLazyThenInsert(t *testing.T) {
     assert.True(t, root.Exists("value"))
 }
 
+func TestRudimentaryForeign(t *testing.T) {
+    var root Node
+    root.Insert("こん")
+    root.Insert("こんにちは")
+    assert.True(t, root.Exists("こん"))
+    assert.True(t, root.Exists("こんにちは"))
+
+    assert.True(t, root.Delete("こん"))
+    assert.True(t, root.Delete("こんにちは"))
+    assert.False(t, root.Exists("こんにち"))
+}
+
 func createNodes(val string) []Node {
     nodes := make([]Node, 0)
     for i, c := range val {
