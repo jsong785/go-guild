@@ -6,13 +6,21 @@ import (
 )
 
 func Testfound(t *testing.T) {
-	assert.Nil(t, findByte(createNodes("a"), byte('z')))
-	assert.Nil(t, findByte(createNodes("a"), byte('z')))
-	assert.Nil(t, findByte(createNodes("abc"), byte('z')))
+	res, index := findByte(createNodes("a"), byte('z'))
+	assert.Nil(t, res)
+	assert.Equal(t, index, -1)
 
-	assert.NotNil(t, findByte(createNodes("a"), byte('a')))
-	assert.NotNil(t, findByte(createNodes("abc"), byte('a')))
-	assert.NotNil(t, findByte(createNodes("abc"), byte('c')))
+	res, index = findByte(createNodes("abc"), byte('z'))
+	assert.Nil(t, res)
+	assert.Equal(t, index, -1)
+
+	res, index = findByte(createNodes("abc"), byte('a'))
+	assert.NotNil(t, res)
+	assert.Equal(t, index, 0)
+
+	res, index = findByte(createNodes("abc"), byte('c'))
+	assert.NotNil(t, res)
+	assert.Equal(t, index, 2)
 }
 
 func TestInsert(t *testing.T) {
@@ -56,7 +64,7 @@ func TestExists(t *testing.T) {
 	assert.True(t, root.Exists("value"))
 }
 
-func TestDeleteLazy(t *testing.T) {
+func TestDelete(t *testing.T) {
 	var root Node
 	root.Insert("vaccinate")
 	root.Insert("val")
@@ -96,23 +104,34 @@ func TestDeleteLazy(t *testing.T) {
 	assert.False(t, root.Exists("value"))
 }
 
-func TestDeleteLazyThenInsert(t *testing.T) {
+func TestDeleteCleansUp(t *testing.T) {
 	var root Node
-	root.Insert("val")
-	assert.True(t, root.Exists("val"))
+	root.Insert("vaccinate")
+	assert.Equal(t, root.Length(), len("vaccinate")+1)
 
-	root.Delete("val")
-	assert.False(t, root.Exists("val"))
+	assert.True(t, root.Delete("vaccinate"))
+	assert.Equal(t, root.Length(), 1)
 
-	root.Insert("val")
-	assert.True(t, root.Exists("val"))
+	root.Insert("abc")
+	root.Insert("abcdef")
+	assert.Equal(t, root.Length(), len("abcdef")+1)
 
-	root.Delete("val")
-	assert.False(t, root.Exists("val"))
+	assert.False(t, root.Delete("ab"))
+	assert.Equal(t, root.Length(), len("abcdef")+1)
+	assert.True(t, root.Delete("abc"))
+	assert.Equal(t, root.Length(), len("abcdef")+1)
 
-	root.Insert("value")
-	assert.False(t, root.Exists("val"))
-	assert.True(t, root.Exists("value"))
+	assert.Equal(t, root.GetMatches("abc"), []string{"abcdef"})
+	root.Insert("zoo")
+	assert.Equal(t, root.Length(), len("abcdef")+4)
+
+	assert.True(t, root.Delete("abcdef"))
+	assert.Equal(t, root.Length(), len("zoo")+1)
+
+	assert.False(t, root.Delete("zo"))
+	assert.Equal(t, root.Length(), len("zoo")+1)
+	assert.True(t, root.Delete("zoo"))
+	assert.Equal(t, root.Length(), 1)
 }
 
 func TestRudimentaryForeign(t *testing.T) {
